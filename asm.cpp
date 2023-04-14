@@ -1,17 +1,60 @@
 #include "asm.h"
+#include "assert.h"
 
-int check_command(const char* string) {
+void Asm_ctor(struct Asm* assm){
+    onegin_ctor(&assm->text, "cpu.txt");
+
+    assm->arr = (int*)calloc(30, sizeof(int));
+    //assm->commands = (int*)calloc(assm->text.text.size, sizeof(char)); 
+}
+
+char* remove_position_in_func(char* string){
 
         if (strncmp(string, "PUSH", 4) == 0) {
-           return PUSH;
+            return string + 4;
         }
 
-        if (strncmp(string, "POP", 2) == 0) {
-           return POP;
+        if (strncmp(string, "POP", 3) == 0) {
+            return string + 3;
         }
 
         if (strncmp(string, "IN", 2) == 0) {
-           return IN;
+            return string + 2;
+        }
+
+        if (strncmp(string, "MUL", 3) == 0) {
+            return string + 3;
+        }
+
+        if (strncmp(string, "ADD", 3) == 0) {
+            return string + 3;
+        }
+
+        if  (strncmp(string, "SUB", 3) == 0)  {
+            return string + 3;
+        }
+        if  (strncmp(string, "DIV", 3) == 0)  {
+            return string + 3;
+        }
+        if  (strncmp(string, "OUT", 3) == 0)  {
+            return string + 3;
+        }
+        return string;
+}
+
+
+int check_command(char* string){
+
+        if (strncmp(string, "PUSH", 4) == 0) {
+            return PUSH;
+        }
+
+        if (strncmp(string, "POP", 3) == 0) {
+            return POP;
+        }
+
+        if (strncmp(string, "IN", 2) == 0) {
+            return IN;
         }
 
         if (strncmp(string, "MUL", 3) == 0) {
@@ -19,7 +62,7 @@ int check_command(const char* string) {
         }
 
         if (strncmp(string, "ADD", 3) == 0) {
-           return ADD;
+            return ADD;
         }
 
         if  (strncmp(string, "SUB", 3) == 0)  {
@@ -32,39 +75,73 @@ int check_command(const char* string) {
             return OUT;
         }
         return UNKNOWN;
-
 }
 
-void print_to_bfile(struct Text* text) {
-    FILE* file = fopen("b_file.txt", "wb");
+void print_to_bfile(struct Asm* assm) {
+    int a = 0;
+    FILE* file_r = fopen("binary.txt", "wb");
 
-    for (int i = 0; i < text->size; i++) {
-        int a = check_command(text->strings[i].str);
-        fwrite(&a, sizeof(int), 1, file);
+    int j = 0;
+    remove_comments(assm);
+
+    for (int i = 0; i < assm->text.text.size; i++) {
+        if (assm->text.text.strings[i].len == 0) {
+            continue;
+        }
+        char* current_pointer = assm->text.text.strings[i].str;
+
+        current_pointer = skip_sp(current_pointer);
+
+        if (*current_pointer == '\0') {
+            a = 0;
+            continue;
+        }
+
+        a = check_command(current_pointer);
+        assm->arr[j] = a;
+
+        current_pointer = remove_position_in_func(current_pointer);
+
+
         if (a == PUSH) {
-            text->strings[i].str = text->strings[i].str + text->strings[i].len_until_sp;
             int number = 0;
-            sscanf(text->strings[i].str, "%d", &number);
-            fwrite(&number, sizeof(int), 1, file);
+            sscanf(current_pointer, "%d", &number);
+            j = j + 1;
+            assm->arr[j] = number;
+        }
+
+        if (i == assm->text.text.size) {
+            break;
+        }
+        j++;
+    }
+    fwrite(assm->arr, sizeof(int), j, file_r);
+    fclose(file_r);
+}
+
+void remove_comments(struct Asm* assm){ 
+    for(int i = 0; i < assm->text.text.size; i++) {
+        char* current_pointer = assm->text.text.strings[i].str; 
+        current_pointer = strchr(current_pointer, '#');
+        if (current_pointer != nullptr) {
+            *current_pointer = '\0';
+            assm->text.text.strings[i].len = (int)(current_pointer - assm->text.text.strings[i].str);
         }
     }
-
-    printf("hueston,we have a problem");
-    fclose(file);
 }
 
-void read_strings(struct Text* text) {
-    for (size_t i = 0; i < text->size ; i++ ) {
-        char* current_pointer = text->strings[i].str;
-        while(isalpha(*current_pointer)) {
-            current_pointer++;
-        }
-            text->strings[i].len_until_sp = (int)(current_pointer - text->strings[i].str);
-            printf("onegin->text.strings[i]/len_until_sp = %d\n", text->strings[i].len_until_sp);
-        }
+char* skip_sp(char* str){
+    while (*str == ' ') {
+        str++;
+    }
+    return str;
 }
 
 
+void Asm_dtor(struct Asm* assm) {
+    free(assm->arr);
+    onegin_dtor(&assm->text);
+}
 
 
 

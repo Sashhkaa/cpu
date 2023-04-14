@@ -10,6 +10,19 @@
 #define CANARY_GUARD 0
 #define HASH_GUARD 1
 
+#define STACK_OK(stk)                            \
+    do {                                          \
+        int error = stack_check(stk);              \
+        printf("error = %d\n", error);              \
+        if (error != 0) {                                     \
+            FILE* err_file = fopen("err.txt", "a");   \
+            STACK_DUMP(stk, err_file, error);          \
+            fclose(err_file);                           \
+            abort();                                     \
+        }                                                 \
+    } while (0)
+
+
 typedef int Elem_t;
 typedef int Canary_t;
 

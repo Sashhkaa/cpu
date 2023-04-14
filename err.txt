@@ -1,0 +1,19 @@
+
+error = NO_ERROR main at cpu/main.cpp(6):
+Stack [0x7fff34770fc0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(9)
+
+data = 0x55d55a6972a0
+size = 0
+capacity = 10
+ctor_status = 1
+  stack->data[0] = 57005 (POISON!)
+  stack->data[1] = 57005 (POISON!)
+  stack->data[2] = 57005 (POISON!)
+  stack->data[3] = 57005 (POISON!)
+  stack->data[4] = 57005 (POISON!)
+  stack->data[5] = 57005 (POISON!)
+  stack->data[6] = 57005 (POISON!)
+  stack->data[7] = 57005 (POISON!)
+  stack->data[8] = 57005 (POISON!)
+  stack->data[9] = 57005 (POISON!)
+

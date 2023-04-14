@@ -2,17 +2,6 @@
 
 #define CASE_ERROR_TEXT(enum_const) case enum_const: return #enum_const;
 
-#define STACK_OK(stk)                            \
-    do {                                          \
-        int error = stack_check(stk);              \
-        if (error != NO_ERROR) {                                    \
-            FILE* err_file = fopen("err.txt", "a");  \
-            STACK_DUMP(stk, err_file, error);         \
-            fclose(err_file);                          \
-            abort();                                    \
-        }                                                \
-    } while (0)
-
 //=============================================================================
 
 Elem_t stack_resize(struct Stack* stack,int mode);
@@ -68,7 +57,7 @@ int stack_ctor(struct Stack* stack, int size,
         stack->capacity = size;
         stack->size     = 0;
         stack->ctor_status += 1; 
-
+        printf("%d\n",stack->capacity);
         for (int i = 0; i < stack->capacity; i++) {
             stack->data[i] = POISON;
         } 
@@ -121,7 +110,7 @@ void stack_push(struct Stack* stack, Elem_t value) {
     if (stack->size >= stack->capacity) {
         stack_resize(stack, INCREASE_CAPACITY);
     }
-
+    
     stack->data[stack->size++] = value;
 
     stack->hash = Hash_data(stack);
@@ -272,8 +261,7 @@ int stack_check(struct Stack* stack) {
 }
 
 int stack_is_destroyed(const struct Stack* stack) {
-    if ((stack != nullptr) && (stack->size == 0) &&
-        (stack->capacity == 0)) {
+    if ((stack != nullptr) && (stack->capacity == 0)) {
             return 1;
         }
     return 0;

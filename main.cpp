@@ -1,11 +1,12 @@
 #include "cpu.h"
 
 int main() {
-    FILE* file = fopen("b_file.txt", "rb");
-    struct Stack stack = {};
-    STACK_CTOR(&stack,2);
-    scanf_bfile(file, &stack);
-    stack_dtor(&stack);
-    fclose(file);
+    struct CPU cpu = {};
+    cpu_ctor(&cpu);
+    STACK_OK(&cpu.stack);
+    printf("after ctor\n");
+    scanf_bfile(&cpu);
+    STACK_OK(&cpu.stack);
+    cpu_dtor(&cpu);
     return 0;
 }

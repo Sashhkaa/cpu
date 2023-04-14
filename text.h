@@ -12,7 +12,6 @@
 struct String {            // buffer
     char* str = nullptr;
     size_t len = 0;
-    int len_until_sp = 0;
 };
 
 struct Text {             //text

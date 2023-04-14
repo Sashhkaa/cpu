@@ -18,6 +18,7 @@ int onegin_ctor(struct Onegin* onegin, const char* name) {
     }
 
     text_filling(&onegin->buffer, &onegin->text);
+    
 
     fclose(onegin->file);
     onegin->file = nullptr;
@@ -43,7 +44,9 @@ long size_file(FILE* fp) {
         return FSEEK_CANT_SET;
     }
 
+
     long position = ftell(fp);
+    
     if (position == -1L) {
         return FTELL_CANT_COUNT;
     }
@@ -116,6 +119,8 @@ void text_filling(struct String* buffer, struct Text* text) {
         text->strings[text->size - 1].len = (int)(current_pointer - text->strings[text->size - 1].str);
     }
 }
+
+
 
 void onegin_dtor(struct Onegin* onegin) {
     free(onegin->buffer.str);
