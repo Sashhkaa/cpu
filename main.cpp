@@ -1,12 +1,13 @@
-#include "cpu.h"
+#include <stdio.h>
+#include <string.h>
+#include <locale.h>
+#include <malloc.h>
+#include "asm.h"
 
 int main() {
-    struct CPU cpu = {};
-    cpu_ctor(&cpu);
-    STACK_OK(&cpu.stack);
-    printf("after ctor\n");
-    scanf_bfile(&cpu);
-    STACK_OK(&cpu.stack);
-    cpu_dtor(&cpu);
+    struct Asm assm = {};
+    Asm_ctor(&assm);
+    print_to_bfile(&assm);
+    Asm_dtor(&assm);
     return 0;
 }

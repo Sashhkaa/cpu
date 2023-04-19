@@ -1,19 +1,174 @@
+error = NO_ERROR stack_push at common/stack.cpp(107):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
 
-error = NO_ERROR main at cpu/main.cpp(6):
-Stack [0x7fff34770fc0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(9)
-
-data = 0x55d55a6972a0
+data = 0x4a8b040
 size = 0
-capacity = 10
+capacity = 2
 ctor_status = 1
   stack->data[0] = 57005 (POISON!)
   stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(117):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 1
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(121):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 1
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(137):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 0
+capacity = 2
+ctor_status = 1
+  stack->data[0] = 57005 (POISON!)
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(107):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 0
+capacity = 2
+ctor_status = 1
+  stack->data[0] = 57005 (POISON!)
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(117):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 1
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(107):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 1
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(117):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 2
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
+
+error = NO_ERROR stack_push at common/stack.cpp(107):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8b040
+size = 2
+capacity = 2
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
+
+error = NO_ERROR stack_push at common/stack.cpp(117):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 3
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
+* stack->data[2] = 3
+  stack->data[3] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(121):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 3
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
+* stack->data[2] = 3
+  stack->data[3] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(137):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 2
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
   stack->data[2] = 57005 (POISON!)
   stack->data[3] = 57005 (POISON!)
-  stack->data[4] = 57005 (POISON!)
-  stack->data[5] = 57005 (POISON!)
-  stack->data[6] = 57005 (POISON!)
-  stack->data[7] = 57005 (POISON!)
-  stack->data[8] = 57005 (POISON!)
-  stack->data[9] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(121):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 2
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 1
+  stack->data[2] = 57005 (POISON!)
+  stack->data[3] = 57005 (POISON!)
+
+error = NO_ERROR stack_pop at common/stack.cpp(137):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 1
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+  stack->data[2] = 57005 (POISON!)
+  stack->data[3] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(107):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 1
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+  stack->data[1] = 57005 (POISON!)
+  stack->data[2] = 57005 (POISON!)
+  stack->data[3] = 57005 (POISON!)
+
+error = NO_ERROR stack_push at common/stack.cpp(117):
+Stack [0x1fff0000f0] "&(cpu->stack)" at cpu_ctor() at cpu/cpu.cpp(12)
+
+data = 0x4a8e100
+size = 2
+capacity = 4
+ctor_status = 1
+* stack->data[0] = 3
+* stack->data[1] = 3
+  stack->data[2] = 57005 (POISON!)
+  stack->data[3] = 57005 (POISON!)
 
