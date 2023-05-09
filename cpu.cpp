@@ -1,34 +1,33 @@
 #include "cpu.h"
 #include "assert.h"
 
-#define CPUSIGN 14
+static const char CPUSIGN = 14;
+static const size_t SIZE_STACK = 2;
+static const size_t SIZE_COMMAND = sizeof(char);
+static const size_t SIZE_REG = sizeof(char);
+static const size_t SIZE_NUMBER = sizeof(int);
 
-
-void cpu_ctor(struct CPU* cpu){
+void cpu_ctor(struct CPU* cpu) {
     for (int i = 0; i < 4; i++) {
         cpu->reg[i] = 0;
     }
 
-    STACK_CTOR(&(cpu->stack), 2);
+    STACK_CTOR(&(cpu->stack), SIZE_STACK);
 
     cpu->file = fopen("binary.txt", "rb");
     assert(cpu->file);
 
-    cpu->size_arr = size_file(cpu->file) / sizeof(int);
+    cpu->size_arr = size_file(cpu->file) / sizeof(char);
 
-    cpu->arr = (uint8_t*)calloc(cpu->size_arr * sizeof(int), sizeof(char));
+    cpu->arr = (char*)calloc(cpu->size_arr, sizeof(char));
 
     cpu->sign = CPUSIGN;
-    
 }
 
-void PUSHfunc(uint8_t* pointer, struct CPU* cpu) {
-    uint8_t* current_pointer = pointer; 
-    printf("fkdfkdf = %d\n", *(current_pointer - 1));
-    printf("fkdfkdf = %d\n", *(current_pointer));
-    printf("fkdfkdf = %d\n", *(current_pointer + 1));
+void PUSHfunc(char* pointer, struct CPU* cpu) {
+    char* current_pointer = pointer; 
 
-    if (*(current_pointer) == 129) {
+    if (*current_pointer == (char)(129)) {
         current_pointer++;
 
         if (*current_pointer == 1) {
@@ -60,10 +59,10 @@ void PUSHfunc(uint8_t* pointer, struct CPU* cpu) {
 
 }
 
-void POPfunc(uint8_t* pointer, struct CPU* cpu) {
-    uint8_t* current_pointer = pointer; 
+void POPfunc(char* pointer, struct CPU* cpu) {
+    char* current_pointer = pointer; 
 
-    if (*current_pointer == 130) {
+    if (*current_pointer == -126) {
         current_pointer++;
 
         if (*current_pointer == 1) {
@@ -93,101 +92,27 @@ void POPfunc(uint8_t* pointer, struct CPU* cpu) {
 
 
 void scanf_bfile (struct CPU* cpu) {
-
     printf("size arr = %d\n", cpu->size_arr);
     
-    fread(cpu->arr, cpu->size_arr + 1, sizeof(uint8_t), cpu->file);
+    fread(cpu->arr, cpu->size_arr, sizeof(char), cpu->file);
 
     printf("size_arr = %d\n", cpu->size_arr);
+
     if (cpu->arr[0] != cpu->sign) {
         printf("version of the cpu cant connet to assembler");
-        fclose(cpu->file);
         return;
     }
-    for(int j = 0; j < cpu->size_arr + 1; j++) {
-    printf("arr[%d] = %d\n",j, cpu->arr[j]);
+
+    for (int j = 0; j < cpu->size_arr; j++) {
+        printf("arr[%d] = %d\n", j, cpu->arr[j]);
     }
-    for (int i = 0; i < cpu->size_arr + 1; i++) {
-        switch((cpu->arr)[i]) {
-            
-            case 1:
-            {   printf("push func\n");
-                PUSHfunc(cpu->arr + i, cpu);
-                i++;
-                break;
-            }
+    int i = 1;
+    while(i < cpu->size_arr){
+        switch((unsigned char)(cpu->arr)[i]) {
 
-            case 129:
-
-            {   printf("push func\n");
-                PUSHfunc(cpu->arr + i, cpu);
-                i++;
-                break;
-            }
-
-            case 2:
-            {   
-                printf("pop_func\n");
-                POPfunc(cpu->arr + i, cpu);
-                break;
-            }
-
-            case 130:
-            {   
-                printf(" i in the 130 mode = %d\n", i);
-                printf("pop_func in register mode\n");
-                POPfunc(cpu->arr + i, cpu);
-                for (int k = 0; k < 4; k++) {
-                    printf("reg[%d] = %d\n", k, cpu->reg[k]);
-                }
-                i++;
-                break;
-            }
-            case IN:
-            {
-                int number = 0;
-                scanf("%d", &number);
-                stack_push(&cpu->stack, number);
-                break;
-            }
-
-            case MUL:
-            {
-                int a = stack_pop(&cpu->stack);
-                int b = stack_pop(&cpu->stack);
-                stack_push(&cpu->stack, a * b);
-                break;
-            }
-
-            case ADD: 
-            {           
-                Elem_t a = stack_pop(&cpu->stack);          
-                Elem_t b = stack_pop(&cpu->stack);
-                stack_push(&cpu->stack, a + b);
-                break;
-            }
-
-            case SUB:
-            {
-                Elem_t a = stack_pop(&cpu->stack);
-                Elem_t b = stack_pop(&cpu->stack);
-                stack_push(&cpu->stack, a - b);
-                break;
-            }
-
-            case DIV:
-            {
-                int a = stack_pop(&cpu->stack);
-                int b = stack_pop(&cpu->stack);
-                stack_push(&cpu->stack, a / b);
-                break;
-            }
-
-            case OUT: {
-                int a = stack_pop(&cpu->stack);
-                printf("%d\n", a);
-                break;
-            }
+#           define DEF_CMD(name, number, len, ...) case name: {__VA_ARGS__} break;
+#           include "../common/comm.h"
+#           undef DEF_CMD
         }
     }
 }
@@ -197,25 +122,20 @@ void cpu_dtor(struct CPU* cpu){
         cpu->reg[i] = 0;
     }
 
+    //free(cpu->stack.data);
+
     stack_dtor(&cpu->stack);
 
+
+    fclose(cpu->file);
     cpu->file = nullptr;
 
     cpu->size_arr = 0;
 
     free(cpu->arr);
-
-    for (int i = 0; i < 4; i++) {
-        cpu->reg[i] = 0;
-    }
-    
-    cpu->arr = nullptr;
 }
 
-// регистры                  //
-// PUSH RAX                      
-// режим в пуше после push 
-// либо просто другой номер  (поднятие бита  129 - регистр, 1 - число )
+
 
 
 
