@@ -4,91 +4,160 @@
 void Asm_ctor(struct Asm* assm){
     onegin_ctor(&assm->data, "cpu.txt");
 
-    assm->arr = (char*)calloc(100, sizeof(int)); // поменять
+    assm->arr = (char*)calloc(100, sizeof(int)); // поменять, но мне лень думать
     assm->sign = ASMSIGN; 
-
+    assm->jump.lable = (struct Lable*)calloc(10, sizeof(struct Lable));
+    for (int i = 0; i < 10; i++) {
+        assm->jump.lable[i].jump_start.jump_start = (int*)calloc(7, sizeof(int));
+    }
 }
-char* remove_position_in_func(struct Asm* assm, char* current_pointer, int a) {
-    if (a = PUSH) {
-        return current_pointer = current_pointer + assm->command_arr[0];
-    }
+char* remove_position_in_func(struct Asm* assm, char* current_pointer, int cmd) {
+    switch (cmd)
+    {
+#       define DEF_CMD(name, number, len, ...) case name: return current_pointer + len;
+#       include "../common/comm.h"
+#       undef DEF_CMD
 
-    if (a = IN) {
-        return current_pointer = current_pointer + assm->command_arr[1];
+        default:
+            return current_pointer;
     }
-
-    else return current_pointer = current_pointer + assm->command_arr[2];
 }
 
 int check_command(char* string){
-
-        if (strncmp(string, "PUSH", 4) == 0) {
-            return PUSH;
-        }
-
-        if (strncmp(string, "POP", 3) == 0) {
-            return POP;
-        }
-
-        if (strncmp(string, "IN", 2) == 0) {
-            return IN;
-        }
-
-        if (strncmp(string, "MUL", 3) == 0) {
-            return MUL;
-        }
-
-        if (strncmp(string, "ADD", 3) == 0) {
-            return ADD;
-        }
-
-        if  (strncmp(string, "SUB", 3) == 0)  {
-            return SUB;
-        }
-        if  (strncmp(string, "DIV", 3) == 0)  {
-            return DIV;
-        }
-        if  (strncmp(string, "OUT", 3) == 0)  {
-            return OUT;
-        }
-        return UNKNOWN;
+#   define DEF_CMD(name, number, len, ...) if (!strncmp(string, #name, len)) return number;
+#   include "../common/comm.h"
+#   undef DEF_CMD
+    return UNKNOWN;
 }
 
-void JUMP_func(struct Asm* assm, char* pointer) {
+int lable_size_func(char* pointer, int mode) {   
+    int size = 0;
     char* current_pointer = pointer;
-    int   lable_len = 0;
-    current_pointer++;
-
-    if (*current_pointer != ':') {
-        printf("you are so fucking stupid for coding"); 
+    if (mode == 0) {
+        while((*current_pointer != '\0')) {
+            size++;
+            current_pointer++;
+        }
+        return size;
     }
 
-    current_pointer = skip_sp(current_pointer);
-
-    while ((*current_pointer != '\0') || (*current_pointer != '#')) {
-        current_pointer++;
-        lable_len++;
+    else {
+        while(*current_pointer != ':')  {
+            current_pointer++;
+            size++;
+        }
+        return size;
     }
-
-    current_pointer = current_pointer - lable_len;
-
-    assm->lable = (char*)calloc(lable_len, sizeof(char));
-
-    for (int i = 0; i < lable_len; i++) {
-        assm->lable[i] = *current_pointer;
-        current_pointer++;
-    } 
-
-    // есть мысль сначал длину метки положить
 }
 
-// не получается если метка до джампа
-void print_to_bfile(struct Asm* assm) {
-    int command_name = 0;
-    FILE* file_b = fopen("binary.txt", "wb");
-    int ip = 1;
-    assm->arr[0] = assm->sign; // тут не оч уверена
+void printf_lable_array(struct Asm* assm) {
+    printf("size = %d\n", assm->jump.size);
+    for (int i = 0; i < assm->jump.size ; i++) {
+        printf("lable[%d].lable = %s\n", i, assm->jump.lable[i].lable);
+        printf("lable[%d].jump_position = %d\n", i, assm->jump.lable[i].jump_pos);
+        printf("lable[%d].jump_start    = %d\n", i, assm->jump.lable[i].jump_start.jump_start[0]);
+    }
+}
 
+void jump_func(struct Asm* assm, char* pointer , int ip, int mode) {
+    char* current_pointer = pointer; 
+    current_pointer = skip_sp(current_pointer);
+    int lable_size = 0;
+    int flag = -1;
+
+    if (mode == 0) {
+        current_pointer = skip_sp(current_pointer);
+
+        lable_size = lable_size_func(current_pointer, 0);
+
+        if (*current_pointer == ':') {
+
+            current_pointer = current_pointer + 1;
+                
+            for (int i = 0; i < assm->jump.size; i++) {
+                if (strncmp(current_pointer, assm->jump.lable[i].lable, lable_size) == 0) { //встретила
+                    flag = i;
+                    break; 
+                }
+            }
+
+            if (flag >= 0) { 
+                assm->jump.lable[flag].jump_start.jump_start[assm->jump.lable[flag].jump_start.size] = ip;
+                assm->jump.lable[flag].jump_start.size++;
+            }
+            else {
+                assm->jump.lable[assm->jump.size].lable = current_pointer;
+                assm->jump.lable[assm->jump.size].jump_start.jump_start[assm->jump.lable[assm->jump.size].jump_start.size] = ip;
+                assm->jump.lable[assm->jump.size].jump_start.size++;
+                assm->jump.size++;
+            }
+        }
+        else printf("when using a label, it must be preceded by :");
+    }
+    else {
+        current_pointer = skip_sp(current_pointer);
+
+        lable_size = lable_size_func(current_pointer, 1);
+
+        if(*(current_pointer + lable_size) == ':') {
+            
+            *(current_pointer + lable_size) = '\0';
+           
+            for (int i = 0; i < assm->jump.size; i++) {
+                if (strncmp(current_pointer, assm->jump.lable[i].lable, lable_size) == 0) { //встретила
+                    flag = i;
+                    break;
+                }
+            }
+
+            if (flag >= 0) {
+                assm->jump.lable[flag].jump_pos = ip;
+            }
+            else {
+                assert(assm->jump.lable);
+                assm->jump.lable[assm->jump.size].lable = current_pointer;
+                assm->jump.lable[assm->jump.size].jump_pos = ip;
+                assm->jump.size++;
+            }
+
+        }
+        else ("after lable it must to be :");  
+    }
+}
+
+
+void poison_lable_filling(struct Lable* lable) {
+    lable->lable = nullptr;
+    lable->jump_pos = -1;
+
+    for (int i = 0; i < lable->jump_start.size; i++) {
+        lable->jump_start.jump_start[i] = -1;
+    }
+}
+
+void second_bypass(struct Asm* assm) {
+    for (int i = 0; i < assm->size_arr; i++) {
+        if ((assm->arr[i] == JP) || (assm->arr[i] == CALL) || (assm->arr[i] == JE) || (assm->arr[i] == JNE) ||
+        (assm->arr[i] == JA) || (assm->arr[i] == JAE) || (assm->arr[i] == JBE) || (assm->arr[i] == JA) || (assm->arr[i] == JB)) {
+            for (int j = 0; j < assm->jump.size; j++) { 
+                for (int k = 0; k < assm->jump.lable[j].jump_start.size; k++) {
+                    if (i == assm->jump.lable[j].jump_start.jump_start[k]) {
+                        *(int*)(assm->arr + i + sizeof(char)) = assm->jump.lable[j].jump_pos;
+                        i += sizeof(int);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void print_to_bfile(struct Asm* assm) {
+    assm->jump.size = 0;
+    assm->size_arr  = 1;
+    int command_name = 0;
+    assm->arr[0] = (char)assm->sign;
+
+    FILE* file_b = fopen("binary.txt", "wb");
     remove_comments(assm);
 
     for (int i = 0; i < assm->data.text.size; i++) {
@@ -114,54 +183,54 @@ void print_to_bfile(struct Asm* assm) {
             current_pointer = skip_sp(current_pointer);
 
             if (strncmp(current_pointer, "RAX", 3) == 0) {
-
-                *(assm->arr + ip) = 129;
-                ip++;
-                *(assm->arr + ip) = 1;
+                *(assm->arr + assm->size_arr) = 129;
+                assm->size_arr += sizeof(char);
+                *(assm->arr + assm->size_arr) = 1;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+
+                assm->size_arr = assm->size_arr + sizeof(char);
                 continue;
             }
 
             if (strncmp(current_pointer, "RBX", 3) == 0){
-
-                *(assm->arr + ip) = 129;
-                ip++;
-                *(assm->arr + ip) = 2;
+                *(assm->arr + assm->size_arr) = 129;
+                assm->size_arr += sizeof(char);
+                *(assm->arr + assm->size_arr) = 2;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+
+                assm->size_arr += sizeof(char);
                 continue;
             }
 
             if (strncmp(current_pointer, "RCX", 3) == 0){
-
-                *(assm->arr + ip) = 129;
-                ip++;
-                *(assm->arr + ip) = 3;
+                *(assm->arr + assm->size_arr) = 129;
+                assm->size_arr += sizeof(char);
+                *(assm->arr + assm->size_arr) = 3;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+
+                assm->size_arr += sizeof(char);
                 continue;
             }
 
             if (strncmp(current_pointer, "RDX", 3) == 0){
 
-                *(assm->arr + ip) = 129;
-                ip++;
-                *(assm->arr + ip) = 4;
+                *(assm->arr + assm->size_arr) = 129;
+                assm->size_arr += sizeof(char);
+                *(assm->arr + assm->size_arr) = 4;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+                assm->size_arr += sizeof(char);
                 continue;
             }
 
@@ -169,17 +238,15 @@ void print_to_bfile(struct Asm* assm) {
             int number = 0;
             sscanf(current_pointer, "%d", &number);
 
-            *(assm->arr + ip) = 1;
+            *(assm->arr + assm->size_arr) = 1;
+            assm->size_arr += sizeof(char);
 
-            ip++;
-
-            *(assm->arr + ip) = number;
-
+            *((int*)(assm->arr + assm->size_arr)) = number;
 
             if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
-                continue;
-            }
-            ip++;
+                    continue;
+                }
+            assm->size_arr += sizeof(int);
             continue;
             }
         }
@@ -189,86 +256,152 @@ void print_to_bfile(struct Asm* assm) {
             current_pointer = skip_sp(current_pointer);
 
             if (strncmp(current_pointer, "RAX", 3) == 0) {
-
-                *(assm->arr + ip) = 130;
-                ip++;
-                *(assm->arr + ip) = 1;
+                
+                *(assm->arr + assm->size_arr) = 130;
+                assm->size_arr++;
+                *(assm->arr + assm->size_arr) = 1;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+                assm->size_arr++;
                 continue;
             }
 
             if (strncmp(current_pointer, "RBX", 3) == 0){
 
-                *(assm->arr + ip) = 130;
-                ip++;
-                *(assm->arr + ip) = 2;
+                *(assm->arr + assm->size_arr) = 130;
+                assm->size_arr++;
+                *(assm->arr + assm->size_arr) = 2;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
-                    printf("skdjksjdks");
                     continue;
                 }
-                ip++;
+                assm->size_arr++;
                 continue;
             }
 
             if (strncmp(current_pointer, "RCX", 3) == 0) {
 
-                *(assm->arr + ip) = 130;
-                ip++;
-                *(assm->arr + ip) = 3;
+                *(assm->arr + assm->size_arr) = 130;
+                assm->size_arr++;
+                *(assm->arr + assm->size_arr) = 3;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+                assm->size_arr++;
                 continue;
             }
 
             if (strncmp(current_pointer, "RDX", 3) == 0) {
 
-                *(assm->arr + ip) = 130;
-                ip++;
-                *(assm->arr + ip) = 4;
+                *(assm->arr + assm->size_arr) = 130;
+                assm->size_arr++;
+                *(assm->arr + assm->size_arr) = 4;
 
                 if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
                     continue;
                 }
-                ip++;
+                assm->size_arr++;
                 continue;
             }
+            else { 
+                *(assm->arr + assm->size_arr)  = 2;
+                assm->size_arr = assm->size_arr + sizeof(char);
+            }
+        }
 
-            else {
-            *(assm->arr + ip) = 2;
-            if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
-                continue;
-            }
-            ip++;
+        if (command_name == JP) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JP;
+            assm->size_arr += (sizeof(char) + sizeof(int));
             continue;
+        }
+
+        if (command_name == JE) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JE;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+
+        
+        if (command_name == JA) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JA;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+        
+        if (command_name == JAE) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JE;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+        
+        if (command_name == JB) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JE;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+
+        if (command_name == JBE) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JE;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+
+        
+        if (command_name == JNE) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = JE;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
+        }
+
+        if (command_name == 0) {
+            jump_func(assm, current_pointer, assm->size_arr, 1);
+            continue;
+        }
+
+        if ((command_name != 0) && (command_name >= 3) && (command_name != CALL) && (command_name != JP)) {
+            *(assm->arr + assm->size_arr) = command_name;
+            if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
+                    continue;
             }
+            assm->size_arr = assm->size_arr + sizeof(char);
+            continue;
         }
 
-        else {
-            *(assm->arr + ip) = command_name;
+        if (command_name == CALL) {
+            jump_func(assm, current_pointer, assm->size_arr, 0);
+            *(assm->arr + assm->size_arr) = CALL;
+            assm->size_arr += (sizeof(char) + sizeof(int));
+            continue;
         }
 
-    if ((i == (assm->data.text.size - 1)) || (assm->data.text.size == 1)) {
-        continue;
+        if (i == (assm->data.text.size - 1)) {
+            continue;
+        }
     }
 
-    ip++;
+    for (int i = 0; i < (assm->size_arr + 1); i++) {
+        printf("arr[%d] = %u\n", i, *(unsigned char*)(assm->arr + i));
+    }
+    printf_lable_array(assm);
+
+    second_bypass(assm);
+
+    for (int i = 0; i < (assm->size_arr + 1); i++) {
+        printf("arr[%d] = %u\n", i, *(unsigned char*)(assm->arr + i));
     }
 
-    printf("ip = %d\n", ip);
+    fwrite(assm->arr, sizeof(char), assm->size_arr + 1, file_b);
 
-    for (int i = 0; i < ip + 1;i++ ) {
-        printf("arr[%d] = %hhu\n", i, *(assm->arr + i));
-    }
-
-    fwrite(assm->arr, sizeof(int), ip, file_b);
     fclose(file_b);
 }
 
@@ -292,6 +425,10 @@ char* skip_sp(char* str) {
 
 void Asm_dtor(struct Asm* assm) {
     free(assm->arr);
+    for (int i = 0; i < 10; i++) {
+        free(assm->jump.lable[i].jump_start.jump_start);
+    }
     onegin_dtor(&assm->data);
+    free(assm->jump.lable);
 }
 
