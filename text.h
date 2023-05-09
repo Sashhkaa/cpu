@@ -9,12 +9,12 @@
 #include <assert.h>
 #include <stdint.h>
 
-struct String {            // buffer
+struct String {             // buffer
     char* str = nullptr;
     size_t len = 0;
 };
 
-struct Text {             //text
+struct Text {               //  text
     struct String* strings = nullptr;
     size_t size = 0;
 };
@@ -41,3 +41,7 @@ void text_filling(struct String* buffer, struct Text* text);
 void onegin_dtor(struct Onegin* onegin);
 
 #endif // TEXT_H
+
+
+
+

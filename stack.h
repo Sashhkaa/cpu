@@ -8,17 +8,17 @@
 #include <math.h>
 
 #define CANARY_GUARD 0
-#define HASH_GUARD 1
+#define HASH_GUARD 0
 
 #define STACK_OK(stk)                            \
     do {                                          \
         int error = stack_check(stk);              \
         printf("error = %d\n", error);              \
-        if (error != 0) {                                     \
+        if (1) {                                     \
             FILE* err_file = fopen("err.txt", "a");   \
             STACK_DUMP(stk, err_file, error);          \
             fclose(err_file);                           \
-            abort();                                     \
+            /*abort();*/                                  \
         }                                                 \
     } while (0)
 

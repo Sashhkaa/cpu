@@ -57,7 +57,6 @@ int stack_ctor(struct Stack* stack, int size,
         stack->capacity = size;
         stack->size     = 0;
         stack->ctor_status += 1; 
-        printf("%d\n",stack->capacity);
         for (int i = 0; i < stack->capacity; i++) {
             stack->data[i] = POISON;
         } 
@@ -112,8 +111,9 @@ void stack_push(struct Stack* stack, Elem_t value) {
     }
     
     stack->data[stack->size++] = value;
-
+#if HASH_GUARD
     stack->hash = Hash_data(stack);
+#endif
     STACK_OK(stack);
 }
 
@@ -127,10 +127,13 @@ Elem_t stack_pop(struct Stack* stack) {
         stack_resize(stack, DECREASE_CAPACITY);
     }
 
-    Elem_t elem = stack->data[stack->size]; 
-    stack->data[--stack->size] = POISON;
+    Elem_t elem = stack->data[stack->size - 1]; 
+    stack->data[stack->size - 1] = POISON;
+    stack->size = stack->size - 1;
 
+#if HASH_GUARD
     stack->hash = Hash_data(stack);
+#endif
     STACK_OK(stack);
     return elem;
 }
@@ -237,6 +240,7 @@ int stack_check(struct Stack* stack) {
         return DATA_CANARY_RIGHT_DIED;
     }
 #endif // CANARY_GUARD
+#if HASH_GUARD
     unsigned int new_hash = stack->hash;
     stack->hash = 0; 
     if (new_hash != Hash_data(stack)) {
@@ -244,6 +248,7 @@ int stack_check(struct Stack* stack) {
     }
 
     stack->hash = new_hash;
+#endif
     
     for (int i = 0; i < stack->size; i++) { 
         if (stack->data[i] == POISON) {
@@ -311,6 +316,7 @@ if (mode == INCREASE_CAPACITY) {
         int new_capacity = stack->capacity * 2;
    
         new_data = (Elem_t*)realloc(new_data, new_capacity * sizeof(Elem_t));
+        
         if (new_data == nullptr) {
             new_capacity = stack->capacity + 1;
             new_data = (Elem_t*)realloc(new_data, new_capacity * sizeof(Elem_t)); 
@@ -321,10 +327,10 @@ if (mode == INCREASE_CAPACITY) {
         }
         else {
             stack->capacity = new_capacity;
+            stack->data = new_data;
             poison_filling(stack);
         }
     }
-
     if (mode == DECREASE_CAPACITY) {
         Elem_t* new_data = stack->data;
         int new_capacity = stack->capacity / 2;
@@ -379,7 +385,7 @@ const char* text_errors(const int error) {
 
 void poison_filling(struct Stack* stack) {
     assert(stack);
-
+    
     for (int i = stack->size; i < stack->capacity; i++) { 
         stack->data[i] = POISON;
     }
